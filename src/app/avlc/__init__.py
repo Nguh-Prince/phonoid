@@ -1,5 +1,5 @@
 from .version import __version__, __major__, __minor__, __micro__, __qualifier__
-from .equalizer import *
+# from .equalizer import *
 from .player import *
 from .enums import *
 from .media import *

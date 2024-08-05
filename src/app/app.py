@@ -1,8 +1,8 @@
 from .ui.mainwindow import MainWindow
 from .ui.widgets import TrackItem
-from .avlc import AudioPlayer, AudioPlayerEvent, AvlcMedia, ms2min
-from .scanner import LibraryScanner
-from .serializer import serialize_library
+# from .avlc import AudioPlayer, AudioPlayerEvent, AvlcMedia, ms2min
+# from .scanner import LibraryScanner
+# from .serializer import serialize_library
 
 from os.path import expanduser, join
 from typing import Union
@@ -18,27 +18,27 @@ class Application(MainWindow):
         super(Application, self).__init__(p)
         self.threadPool = QThreadPool(self)
         self.threadPool.setMaxThreadCount(1000)
-        self.audioPlayer: Union[AudioPlayer, None] = None
+        self.audioPlayer = None
 
-        self.closingQueue.append(self.serialize)
+        # self.closingQueue.append(self.serialize)
 
         self.init_player()
-        self.scan_library()
+        # self.scan_library()
 
     def init_player(self):
-        self.audioPlayer = AudioPlayer()
-        self.audioPlayer.set_volume(50)
-        self.audioPlayer.connect_event(AudioPlayerEvent.PositionChanged, self.on_pos_changed)
-        self.audioPlayer.connect_event(AudioPlayerEvent.TrackEndReached, self.on_track_changed)
+        # self.audioPlayer = AudioPlayer()
+        # self.audioPlayer.set_volume(50)
+        # self.audioPlayer.connect_event(AudioPlayerEvent.PositionChanged, self.on_pos_changed)
+        # self.audioPlayer.connect_event(AudioPlayerEvent.TrackEndReached, self.on_track_changed)
 
-        self.playerPanelLayout.seekbarFrame.seekbar.seek.connect(self.audioPlayer.set_position)
+        # self.playerPanelLayout.seekbarFrame.seekbar.seek.connect(self.audioPlayer.set_position)
         self.playerPanelLayout.playerControllerFrame.playPause.clicked.connect(self.on_play_pause)
         self.playerPanelLayout.playerControllerFrame.nextButton.clicked.connect(self.on_next)
         self.playerPanelLayout.playerControllerFrame.previousButton.clicked.connect(self.on_previous)
         self.playerPanelLayout.playerControllerFrame.fastForward.clicked.connect(self.on_fast_forward)
         self.playerPanelLayout.playerControllerFrame.rewind.clicked.connect(self.on_rewind)
 
-        self.playerPanelLayout.playbackControllerFrame.volumeButton.onValueChanged.connect(self.audioPlayer.set_volume)
+        # self.playerPanelLayout.playbackControllerFrame.volumeButton.onValueChanged.connect(self.audioPlayer.set_volume)
         self.playerPanelLayout.playbackControllerFrame.equalizerButton.clicked.connect(self.open_equalizer)
         self.playerPanelLayout.playbackControllerFrame.playbackModeButton.onStateChanged.connect(
             self.playback_mode_changed
@@ -71,7 +71,7 @@ class Application(MainWindow):
     def playback_mode_changed(self, mode):
         self.audioPlayer.set_playback_mode(mode)
 
-    def library_add_track(self, media: AvlcMedia):
+    def library_add_track(self, media):
         track = TrackItem(self, media)
         track.onPlay.connect(self.quick_play)
         self.libraryPage.trackContainer.addItem(track)
@@ -90,11 +90,11 @@ class Application(MainWindow):
             )
 
     def on_track_changed(self):
-        media: AvlcMedia = self.audioPlayer.mediaList[self.audioPlayer.currentIndex]
+        media = self.audioPlayer.mediaList[self.audioPlayer.currentIndex]
         self.update_player_info(media.art, media.title, media.artist, media.duration)
 
     # double-click on a track item to quick play
-    def quick_play(self, media: AvlcMedia):
+    def quick_play(self, media):
         self.audioPlayer.play(self.audioPlayer.mediaList.index(media))
         self.update_player_info(media.art, media.title, media.artist, media.duration)
         self.playerPanelLayout.playerControllerFrame.playPause.changeIcon("res/icons/pause.svg")
@@ -105,5 +105,5 @@ class Application(MainWindow):
         self.playerPanelLayout.playerInfoFrame.setArtist(artist)
         self.playerPanelLayout.seekbarFrame.seekbar.setRange(0, duration)
 
-    def serialize(self):
-        serialize_library(self.audioPlayer.mediaList, "conf/library.json")
+    # def serialize(self):
+    #     serialize_library(self.audioPlayer.mediaList, "conf/library.json")

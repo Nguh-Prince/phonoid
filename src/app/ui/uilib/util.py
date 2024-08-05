@@ -36,8 +36,8 @@ def mask_image_circ(imgpath, imgtype='jpg', size=64, angle=0):
     image.convertToFormat(QImage.Format_ARGB32)
     imgsize = min(image.width(), image.height())
     rect = QRect(
-        (image.width() - imgsize) / 2,
-        (image.height() - imgsize) / 2,
+        (image.width() - imgsize) // 2,
+        (image.height() - imgsize) // 2,
         imgsize,
         imgsize,
     )
@@ -57,7 +57,7 @@ def mask_image_circ(imgpath, imgtype='jpg', size=64, angle=0):
     pm = QPixmap.fromImage(out_img)
     pm.setDevicePixelRatio(pr)
     size *= pr
-    pm = pm.scaled(size, size, Qt.KeepAspectRatio,
+    pm = pm.scaled(int(size), int(size), Qt.KeepAspectRatio,
                    Qt.SmoothTransformation)
 
     return pm

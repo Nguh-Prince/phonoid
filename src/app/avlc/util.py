@@ -4,7 +4,6 @@ import ctypes
 import vlc
 from inspect import getfullargspec
 
-
 class RandomMediaIndexGenerator(object):
     def __init__(self):
         super(RandomMediaIndexGenerator, self).__init__()
