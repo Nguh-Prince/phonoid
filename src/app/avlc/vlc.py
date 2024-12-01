@@ -119,13 +119,29 @@ else:
 # instanciated.
 _internal_guard = object()
 
+class CustomCDLL(ctypes.CDLL):
+    def __init__(self, name: str | None, mode: int = ..., handle: int | None = ..., use_errno: bool = ..., use_last_error: bool = ..., winmode: int | None = 0) -> None:
+        super().__init__(name, mode, handle, use_errno, use_last_error, winmode)
+
 def exception_handler_decorator(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except FileNotFoundError:
-            print(f"Error running function {func}")
-    
+        except FileNotFoundError as e:
+            print(f"FileNotFoundError running function {func}. Error {e}")
+            
+            join = os.path.join
+            plugin_path = join(os.getcwd(), "libvlc.dll")
+            dll = CustomCDLL(plugin_path)
+
+            return dll, plugin_path
+        except TypeError as e:
+            print(f"TypeError running function, {func}. Error: {e}")
+            join = os.path.join
+            plugin_path = join(os.getcwd(), "libvlc.dll")
+            dll = CustomCDLL(plugin_path)
+
+            return dll, plugin_path
     return wrapper
 
 @exception_handler_decorator
@@ -134,7 +150,7 @@ def find_lib():
     plugin_path = os.environ.get('PYTHON_VLC_MODULE_PATH', None)
     if 'PYTHON_VLC_LIB_PATH' in os.environ:
         try:
-            dll = ctypes.CDLL(os.environ['PYTHON_VLC_LIB_PATH'])
+            dll = CustomCDLL(os.environ['PYTHON_VLC_LIB_PATH'])
         except OSError:
             logger.error("Cannot load lib specified by PYTHON_VLC_LIB_PATH env. variable")
             sys.exit(1)
@@ -143,17 +159,6 @@ def find_lib():
         sys.exit(1)
     if dll is not None:
         return dll, plugin_path
-    # else:
-    #     dirname = os.path.dirname
-
-    #     print(f"The file is {__file__}")
-    #     plugin_path = os.path.join(
-    #         dirname(dirname(dirname(dirname(__file__)))),
-    #         'libvlc.dll'
-    #     )
-    #     dll = ctypes.CDLL(plugin_path)
-    #     return dll, plugin_path
-
 
     if sys.platform.startswith('win'):
         libname = 'libvlc.dll'
@@ -194,14 +199,14 @@ def find_lib():
                 p = os.getcwd()
                 os.chdir(plugin_path)
                  # if chdir failed, this will raise an exception
-                dll = ctypes.CDLL('.\\' + libname)
+                dll = CustomCDLL('.\\' + libname)
                  # restore cwd after dll has been loaded
                 os.chdir(p)
             else:  # may fail
-                dll = ctypes.CDLL('.\\' + libname)
+                dll = CustomCDLL('.\\' + libname)
         else:
             plugin_path = os.path.dirname(p)
-            dll = ctypes.CDLL(p)
+            dll = CustomCDLL(p)
 
     elif sys.platform.startswith('darwin'):
         # FIXME: should find a means to configure path
@@ -210,8 +215,8 @@ def find_lib():
         p = d + 'lib/libvlc.dylib'
         if os.path.exists(p) and os.path.exists(c):
             # pre-load libvlccore VLC 2.2.8+
-            ctypes.CDLL(c)
-            dll = ctypes.CDLL(p)
+            CustomCDLL(c)
+            dll = CustomCDLL(p)
             for p in ('modules', 'plugins'):
                 p = d + p
                 if os.path.isdir(p):
@@ -219,19 +224,19 @@ def find_lib():
                     break
         else:  # hope, some [DY]LD_LIBRARY_PATH is set...
             # pre-load libvlccore VLC 2.2.8+
-            ctypes.CDLL('libvlccore.dylib')
-            dll = ctypes.CDLL('libvlc.dylib')
+            CustomCDLL('libvlccore.dylib')
+            dll = CustomCDLL('libvlc.dylib')
 
     else:
         # All other OSes (linux, freebsd...)
         p = find_library('vlc')
         try:
-            dll = ctypes.CDLL(p)
+            dll = CustomCDLL(p)
         except OSError:  # may fail
             dll = None
         if dll is None:
             try:
-                dll = ctypes.CDLL('libvlc.so.5')
+                dll = CustomCDLL('libvlc.so.5')
             except:
                 raise NotImplementedError('Cannot find libvlc lib')
 
@@ -8467,15 +8472,21 @@ def callbackmethod(callback):
     """Now obsolete @callbackmethod decorator."""
     return callback
 
+def get_dll_attr(dll, attribute: str):
+    try:
+        return getattr(dll, attribute)
+    except (AttributeError, TypeError):
+        return None
+
 # libvlc_free is not present in some versions of libvlc. If it is not
 # in the library, then emulate it by calling libc.free
-if not hasattr(dll, 'libvlc_free'):
+if not get_dll_attr(dll, 'libvlc_free'):
     # need to find the free function in the C runtime. This is
     # platform specific.
     # For Linux and MacOSX
     libc_path = find_library('c')
     if libc_path:
-        libc = ctypes.CDLL(libc_path)
+        libc = CustomCDLL(libc_path)
         libvlc_free = libc.free
     else:
         # On win32, it is impossible to guess the proper lib to call

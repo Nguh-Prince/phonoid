@@ -181,7 +181,11 @@ class WindowContainer(QWidget):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
-        with open("res/style.qss") as style:
+        from os.path import dirname, join
+
+        SRC_FOLDER = dirname(dirname(dirname(dirname(__file__))))
+
+        with open(join(SRC_FOLDER, "res", "style.qss")) as style:
             self.setStyleSheet(style.read())
 
         self.rightSizeGrip = SideGrip(self, Qt.RightEdge, Qt.SizeHorCursor)

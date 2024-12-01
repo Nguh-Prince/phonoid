@@ -1,8 +1,8 @@
 from .ui.mainwindow import MainWindow
 from .ui.widgets import TrackItem
-# from .avlc import AudioPlayer, AudioPlayerEvent, AvlcMedia, ms2min
-# from .scanner import LibraryScanner
-# from .serializer import serialize_library
+from .avlc import AudioPlayer, AudioPlayerEvent, AvlcMedia, ms2min
+from .scanner import LibraryScanner
+from .serializer import serialize_library
 
 from os.path import expanduser, join
 from typing import Union
@@ -20,7 +20,7 @@ class Application(MainWindow):
         self.threadPool.setMaxThreadCount(1000)
         self.audioPlayer = None
 
-        # self.closingQueue.append(self.serialize)
+        self.closingQueue.append(self.serialize)
 
         self.init_player()
         # self.scan_library()
@@ -95,8 +95,8 @@ class Application(MainWindow):
 
     # double-click on a track item to quick play
     def quick_play(self, media):
-        self.audioPlayer.play(self.audioPlayer.mediaList.index(media))
-        self.update_player_info(media.art, media.title, media.artist, media.duration)
+        # self.audioPlayer.play(self.audioPlayer.mediaList.index(media))
+        # self.update_player_info(media.art, media.title, media.artist, media.duration)
         self.playerPanelLayout.playerControllerFrame.playPause.changeIcon("res/icons/pause.svg")
 
     def update_player_info(self, cover, title, artist, duration):
@@ -105,5 +105,5 @@ class Application(MainWindow):
         self.playerPanelLayout.playerInfoFrame.setArtist(artist)
         self.playerPanelLayout.seekbarFrame.seekbar.setRange(0, duration)
 
-    # def serialize(self):
-    #     serialize_library(self.audioPlayer.mediaList, "conf/library.json")
+    def serialize(self):
+        serialize_library(self.audioPlayer.mediaList, "conf/library.json")

@@ -4,6 +4,9 @@ from PyQt5.QtCore import QSize, Qt
 from .widgets import ControlButton, ScrollableButton, Seekbar, PlaybackModeControlButton
 from .uilib.util import mask_image_circ, shadowify, setElide
 
+from os.path import dirname, join
+
+SRC_FOLDER = dirname(dirname(dirname(__file__)))
 
 class PlayerInfoFrame(QtWidgets.QFrame):
     def __init__(self, p):
@@ -17,7 +20,7 @@ class PlayerInfoFrame(QtWidgets.QFrame):
         self.coverArt = QtWidgets.QLabel(self)
         self.coverArt.setObjectName("player-info-cover-art")
         self.coverArt.setFixedSize(58, 58)
-        self.coverArt.setPixmap(mask_image_circ("res/icons/cd.png", imgtype="png", size=58))
+        self.coverArt.setPixmap(mask_image_circ(join(SRC_FOLDER, "res", "icons", "cd.png"), imgtype="png", size=58))
 
         self.trackTitle = QtWidgets.QLabel("----", self)
         self.trackTitle.setObjectName("player-info-track-title")
@@ -36,7 +39,7 @@ class PlayerInfoFrame(QtWidgets.QFrame):
 
     def setCoverArt(self, coverPath):
         if coverPath is None:
-            self.coverArt.setPixmap(mask_image_circ("res/icons/cd.png", imgtype="png", size=58))
+            self.coverArt.setPixmap(mask_image_circ(join(SRC_FOLDER, "res", "icons", "cd.png"), imgtype="png", size=58))
         else:
             self.coverArt.setPixmap(mask_image_circ(coverPath, imgtype="jpg", size=58))
 

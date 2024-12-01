@@ -224,9 +224,15 @@ class AudioPlayer:
         self.cleanup()
 
     def cleanup(self):
-        self.vlcPlayer.release()
-        for media in self.mediaList:
-            media.vlcMediaObject.release()
-            del media
-        self.vlcInstance.release()
-        AudioPlayerEvent.CleanupFinishedEvent()
+        try:
+            self.vlcPlayer.release()
+
+            for media in self.mediaList:
+                media.vlcMediaObject.release()
+                del media
+
+                self.vlcInstance.release()
+                AudioPlayerEvent.CleanupFinishedEvent()
+                
+        except AttributeError as e:
+            print(e)
